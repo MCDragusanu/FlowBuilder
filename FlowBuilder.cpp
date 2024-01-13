@@ -332,9 +332,9 @@ void CreateNewFlowState::handleInvalidInput(FlowController& controller) {
 
 void StartState::doWork(FlowController& controller) {
     system("CLS");
-    std::cout << "Welcome to Flow Builder 1.0\n";
+    std::cout << "Welcome to Flow Builder 1.1.0\n";
     auto picked = handler.pickOption("What do you want to do?",
-        { Option("Run Existing Flow", "a", "a"), Option("Create New Flow", "b", "b") });
+        { Option("Run Existing Flow", "a", "a"), Option("Create New Flow", "b", "b")  , Option("Delete Flow", "c", "c") });
 
     if (picked.has_value()) {
         if (picked->m_key == "a") {
@@ -347,6 +347,11 @@ void StartState::doWork(FlowController& controller) {
             CreateNewFlowState* createFlow = new CreateNewFlowState();
             controller.setState(createFlow);
            
+        }
+        else if (picked->m_key == "c") {
+            DeleteExistingFlow* deleteFlow = new DeleteExistingFlow();
+            controller.setState(deleteFlow);
+
         }
         else {
             goto decision;
@@ -375,4 +380,34 @@ FlowController::FlowController()
 void FlowController::start() {
     FlowState* state = new StartState();
     state->doWork(*this);
+}
+
+void DeleteExistingFlow::onExit(FlowController& controller)
+{
+    controller.setState(new StartState());
+}
+
+void DeleteExistingFlow::doWork(FlowController& controller)
+{
+    auto options = std::vector<Option>();
+    auto flows = controller.getCurrentFlows();
+
+    if (flows.empty()) {
+        std::cout << "There are no flows!";
+        onExit(controller);
+        return;
+    }
+    for (size_t index = 0; index < flows.size(); index++) {
+        std::stringstream ss;
+        ss << index + 1 << "." << " " << flows.at(index).getName() << " " << flows.at(index).getTimeOfCreation();
+        options.emplace_back(ss.str(), std::to_string(index + 1), std::to_string(index + 1));
+    }
+    auto result = handler.pickOption("Pick the desired Flow to be deleted ", options);
+    if (result.has_value()) {
+        auto index = std::atoi(result->m_key.c_str()) - 1;
+        system("CLS");
+        std::cout << "\nExecution has began" << "\n";
+        controller.removeFlow(index);
+        onExit(controller);
+    }
 }

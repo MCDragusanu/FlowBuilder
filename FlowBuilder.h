@@ -32,7 +32,10 @@ struct FlowController {
     void addNewFlow(Flow&& flow) {
         m_flows.emplace_back(flow);
     }
-
+    void removeFlow(size_t index) {
+        m_flows.erase(m_flows.begin() + index);
+        std::cout << "\nFlow Removed!\n";
+    }
     void start(); 
     std::vector<Flow> getCurrentFlows() const noexcept {
         return m_flows;
@@ -125,6 +128,11 @@ public:
     void doWork(FlowController& controller) override {
         auto options = std::vector<Option>();
         auto flows = controller.getCurrentFlows();
+        if (flows.empty()) {
+            std::cout << "There are no flows!";
+            onExit(controller);
+            return;
+        }
         for (size_t index = 0; index < flows.size(); index++) {
             std::stringstream ss;
             ss << index + 1 << "." << " " << flows.at(index).getName() << " " << flows.at(index).getTimeOfCreation();
@@ -143,6 +151,19 @@ public:
     const char* getType() const noexcept override {
         return "Run Existing Flow State";
     }
+private:
+    InputHandler handler;
+};
+
+class DeleteExistingFlow : public FlowState {
+public:
+    void onEnter(FlowController& controller) {
+    };
+    void onExit(FlowController& controller);
+    void doWork(FlowController& controller);
+    const char* getType() const noexcept {
+        return "Delete Existing Flow";
+    };
 private:
     InputHandler handler;
 };

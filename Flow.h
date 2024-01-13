@@ -100,6 +100,13 @@ private:
 
     void visit(NumberInputNode& node) override {
         try{
+            auto skip = handler.pickOption("Do you want to skip this step?", { Option("Yes" , "Yes" , "Yes") , Option("No" , "No" , "No") });
+            if (skip.has_value()) {
+                if (skip->m_key == "Yes") {
+                    node.setBuffer(0.0f);
+                    return;
+                }
+            }
             auto result = handler.readFloat(node.getPrompt().c_str());
             if (!result.has_value()) {
                 throw InvalidInput("Input provided can't be transformed to float");
@@ -124,7 +131,15 @@ private:
     void visit(FileInputNode& node) override {
 
         try {
+            auto skip = handler.pickOption("Do you want to skip this step", { Option("Yes" , "Yes" , "Yes") , Option("No" , "No" , "No") });
+            if (skip.has_value()) {
+                if (skip->m_key == "Yes") {
+                    node.setBuffer(std::string());
+                    return;
+                }
+            }
             auto fileHandle = fileSystem->getFileHandle(node.getFileName(), translateExtension(node.getExtension()));
+
             if (fileHandle == nullptr) {
                 throw InvalidHandle((std::string("Failed to get a file handle for file ") + std::string(node.getFileName()) + std::string(node.getExtension())).c_str());
             }
@@ -151,6 +166,13 @@ private:
 
     void visit(TextInputNode& node) override {
         try {
+            auto skip = handler.pickOption("Do you want to skip this step", { Option("Yes" , "Yes" , "Yes") , Option("No" , "No" , "No") });
+            if (skip.has_value()) {
+                if (skip->m_key == "Yes") {
+                    node.setBuffer("");
+                    return;
+                }
+            }
             auto result = handler.readString(node.getPrompt().c_str());
             if (!result.has_value()) {
                 throw InvalidInput("Input provided can't be transformed to string");
@@ -172,6 +194,13 @@ private:
 
     void visit(FloatCalculusNode& node) override {
         try {
+            auto skip = handler.pickOption("Do you want to skip this step", { Option("Yes" , "Yes" , "Yes") , Option("No" , "No" , "No") });
+            if (skip.has_value()) {
+                if (skip->m_key == "Yes") {
+                    node.setBuffer(0.0f);
+                    return;
+                }
+            }
             auto dependencies = node.getDependencies();
             auto foundNodes = std::vector<float>();
             auto typeSet = std::set<NodeType>();
@@ -230,6 +259,13 @@ private:
 
     void visit(StringCalculusNode& node) override {
         try {
+            auto skip = handler.pickOption("Do you want to skip this step", { Option("Yes" , "Yes" , "Yes") , Option("No" , "No" , "No") });
+            if (skip.has_value()) {
+                if (skip->m_key == "Yes") {
+                    node.setBuffer(std::string());
+                    return;
+                }
+            }
             auto dependencies = node.getDependencies();
             auto foundInput = std::vector<std::string>();
             std::stringstream ss;
@@ -277,6 +313,10 @@ private:
     void visit(OutputNode& node) override {
         try
         {
+            auto skip = handler.pickOption("Do you want to skip this step", { Option("Yes" , "Yes" , "Yes") , Option("No" , "No" , "No") });
+            if (skip.has_value()) {
+                if (skip->m_key == "Yes") return;
+            }
 
             auto handle = fileSystem->getFileHandle(node.getFileName(), translateExtension(node.getExtension()));
             if (handle == nullptr) {
@@ -353,6 +393,11 @@ private:
     }
 
     void visit(DisplayNode& node) {
+
+        auto skip = handler.pickOption("Do you want to skip this step", { Option("Yes" , "Yes" , "Yes") , Option("No" , "No" , "No") });
+        if (skip.has_value()) {
+            if (skip->m_key == "Yes") return;
+        }
         auto dependencies = node.getDependencies();
         auto foundInput = std::vector<std::string>();
      
@@ -457,4 +502,5 @@ private:
     void visit(EndNode& node) {
         std::cout << "flow has finished";
     }
+    
 };
