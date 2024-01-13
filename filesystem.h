@@ -9,6 +9,11 @@
 #include <filesystem>
 class FileSystem;
 
+class InvalidHandle : public std::exception {
+public:
+    InvalidHandle(const char* reason) :exception(reason) {};
+};
+
 enum FileExtension {
     TXT,
     CSV,
