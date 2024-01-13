@@ -7,7 +7,13 @@
 #include <algorithm>
 #include <stdexcept>
 #include <filesystem>
+
 class FileSystem;
+
+class InvalidHandle : public std::exception {
+public:
+    InvalidHandle(const char* reason) :exception(reason) {};
+};
 
 enum FileExtension {
     TXT,
@@ -255,4 +261,4 @@ public:
     }
 };
 
-FileSystem* FileSystem::m_instance = nullptr;
+inline FileSystem* FileSystem::m_instance = nullptr;
