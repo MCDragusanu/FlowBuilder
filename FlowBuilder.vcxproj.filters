@@ -42,4 +42,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Media Include="..\..\..\Downloads\Untitled video - Made with Clipchamp (1).mp4">
+      <Filter>Resource Files</Filter>
+    </Media>
+  </ItemGroup>
 </Project>

@@ -139,6 +139,9 @@
     <ClCompile Include="FlowBuilder.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Media Include="..\..\..\Downloads\Untitled video - Made with Clipchamp (1).mp4" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
