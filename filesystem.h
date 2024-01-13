@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <filesystem>
+
 class FileSystem;
 
 class InvalidHandle : public std::exception {
@@ -260,4 +261,4 @@ public:
     }
 };
 
-FileSystem* FileSystem::m_instance = nullptr;
+inline FileSystem* FileSystem::m_instance = nullptr;

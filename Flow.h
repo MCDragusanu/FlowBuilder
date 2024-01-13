@@ -1,5 +1,5 @@
 #pragma once
-
+#pragma warning(disable: 4996)
 
 #include <unordered_set>
 #include <unordered_map>
@@ -8,6 +8,9 @@
 #include <functional>
 #include <algorithm>
 #include <set>
+#include <chrono>
+#include <ctime>
+
 #include "Node.h"
 #include "Operation.h"
 #include "filesystem.h"
@@ -15,7 +18,29 @@
 
 class Flow : private NodeVisitor {
 public: 
-      void executeFlow() {
+    Flow():m_flowName("Default Flow") {
+        // Get the current time point
+        auto currentTime = std::chrono::system_clock::now();
+
+        // Convert the time point to a time_t object
+        std::time_t currentTime_t = std::chrono::system_clock::to_time_t(currentTime);
+
+        // Convert time_t to a local time string
+        char timeString[100];
+        std::strftime(timeString, sizeof(timeString), "%Y-%m-%d %H:%M:%S", std::localtime(&currentTime_t));
+
+        m_timeStamp = timeString;
+      }
+    const char* getName() const noexcept {
+        return m_flowName.c_str();
+    }
+    const char* getTimeOfCreation() const noexcept{
+        return m_timeStamp.c_str();
+    }
+    void setName(std::string&& name) {
+        this->m_flowName = name;
+    }
+    void executeFlow() {
         while (!executionOrder.empty()) {
             NodeUid uid = executionOrder.front();
             nodes.at(uid)->acceptVisitor(*this);
@@ -43,28 +68,34 @@ public:
           }
           return result;
       }
+      void printFlow(){
+          std::queue tmp_q = executionOrder; //copy the original queue to the temporary queue
+          std::cout << "*********** Flow So Far ***********\n";
+          while (!tmp_q.empty())
+          {
+              NodeUid q_element = tmp_q.front();
+              auto nodeEntry = nodes.at(q_element);
+              std::cout << "(" << nodeTypeToString(nodeEntry->getType()) << "," << nodeEntry->getUid() << ") -> ";
+              tmp_q.pop();
+          }
+          std::cout << "\n**************************\n";
+      }
 private:
     FileSystem* fileSystem = FileSystem::getInstance();
     std::unordered_map<NodeUid, Node*> nodes;
     std::queue<NodeUid> executionOrder;
+    std::string m_flowName;
+    std::string m_timeStamp;
     InputHandler handler;
     void restartDecision(std::function<void()> onSkip, std::function<void()> onRestart) {
-        auto picked = handler.pickOption("Do you want to restart", { Option("Yes" , "Enter" , ENTER_KEY) , Option("No" , "Esc" , ESC_KEY)});
+        auto picked = handler.pickOption("Do you want to restart", { Option("Yes" , "Y" , "Y") , Option("No" , "N" , "N")});
         if (picked.has_value()) {
-            if (picked->m_keyName == "Enter") {
+            if (picked->m_key == "Y") {
                 onRestart();
             }
             else onSkip();
         }
-        /*std::cout << "Do you want to retry or skip?\n";
-        std::cout << "Y or y -> Yes" << "    Any other -> Skip\n";
-        char picked;
-        std::cin >> picked;
-
-        if (picked == 'y' || picked == 'Y') {
-            onRestart();
-        }
-        else onSkip();*/
+      
     }
 
     void visit(NumberInputNode& node) override {
@@ -88,14 +119,14 @@ private:
         }
     }
     void visit(TitleNode& node) override {
-        std::cout << node.getContent()<<"\n";
+        //std::cout << node.getContent()<<"\n";
     }
     void visit(FileInputNode& node) override {
 
         try {
             auto fileHandle = fileSystem->getFileHandle(node.getFileName(), translateExtension(node.getExtension()));
             if (fileHandle == nullptr) {
-                throw InvalidHandle((std::string("Failed to get a fie handle for file ") + std::string(node.getFileName()) + std::string(node.getExtension())).c_str());
+                throw InvalidHandle((std::string("Failed to get a file handle for file ") + std::string(node.getFileName()) + std::string(node.getExtension())).c_str());
             }
             auto fileContent = fileSystem->readFromInputFile(fileHandle.get());
             node.setBuffer(std::move(fileContent));
@@ -279,7 +310,8 @@ private:
             char delim = node.getExtension() == ".csv" ? ',' : ' ';
           
 
-
+            ss << node.getTitle() << "\n";
+            ss << node.getDescription() << "\n";
             for (auto iterator = foundInput.cbegin(); iterator < foundInput.cend(); ++iterator) {
                 ss << *iterator;
                 if (iterator < foundInput.cend() - 1) {
@@ -345,16 +377,17 @@ private:
             else return std::string();
             });
 
-        char delim = '\n';
+        char delim = ' ';
      
 
-
+        std::stringstream ss;
         for (auto iterator = foundInput.cbegin(); iterator < foundInput.cend(); ++iterator) {
-            std::cout << *iterator;
+            ss << *iterator;
             if (iterator < foundInput.cend() - 1) {
-                std::cout << delim;
+                ss << delim;
             }
         }
+        std::cout << ss.str() << "\n";
 
     }
 
@@ -419,6 +452,9 @@ private:
         }
     }
     void visit(TextNode& node) {
-
+     //   std::cout << node.getContent();
+    }
+    void visit(EndNode& node) {
+        std::cout << "flow has finished";
     }
 };

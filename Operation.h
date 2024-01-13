@@ -53,7 +53,7 @@ struct MinOperation : public Operation<T> {
 	}
 };
 
-std::vector<std::string> splitWords(const std::string& str) {
+inline std::vector<std::string> splitWords(const std::string& str) {
 	std::vector<std::string> words;
 	std::istringstream iss(str);
 	std::string word;
@@ -63,7 +63,7 @@ std::vector<std::string> splitWords(const std::string& str) {
 	return words;
 }
 
-std::string operator * (const std::string& lhs, const std::string& rhs) {
+inline std::string operator * (const std::string& lhs, const std::string& rhs) {
 	std::string result;
 
 	for (char ch_lhs : lhs) {
@@ -74,7 +74,7 @@ std::string operator * (const std::string& lhs, const std::string& rhs) {
 
 	return result;
 }
-std::string operator-(const std::string& lhs, const std::string& rhs) {
+inline std::string operator-(const std::string& lhs, const std::string& rhs) {
 	std::string result = lhs;
 
 	// Iterate through each character in rhs and remove it from result
@@ -87,7 +87,7 @@ std::string operator-(const std::string& lhs, const std::string& rhs) {
 
 	return result;
 }
-std::string operator / (const std::string& str, const std::string& delimiter) {
+inline std::string operator / (const std::string& str, const std::string& delimiter) {
 	size_t pos = str.find(delimiter);
 
 	// If the delimiter is found, return the substring before the delimiter

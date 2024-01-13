@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+
 #define interface struct
 
 typedef size_t NodeUid;
@@ -20,7 +21,7 @@ enum class NodeType
 	Output,
 	End
 };
-std::string nodeTypeToString(NodeType type) {
+inline std::string nodeTypeToString(NodeType type) {
 	switch (type) {
 	case NodeType::Text:
 		return "Text";
@@ -89,6 +90,7 @@ class OutputNode;
 class DisplayNode;
 class FileInputNode;
 class TitleNode;
+class EndNode;
 // Visitor base class
 interface NodeVisitor {
 
@@ -101,6 +103,7 @@ interface NodeVisitor {
 	virtual void visit(DisplayNode& node) = 0;
 	virtual void visit(FileInputNode& node) = 0;
 	virtual void visit(TitleNode& node) = 0;
+	virtual void visit(EndNode& node) = 0;
 };
 
 class Node {
@@ -167,10 +170,13 @@ private:
 
 class TextNode : public Node, public Storable<std::pair<std::string, std::string>> , public Displayable{
 public:
-	TextNode(NodeUid uid, std::pair<std::string, std::string>&& pair) : Node(uid, NodeType::Text) {};
+	TextNode(NodeUid uid, std::pair<std::string, std::string>&& pair) : Node(uid, NodeType::Text) {
+		title = pair.first;
+		body = pair.second;
+	};
 	
 	const std::pair<std::string, std::string>& getBuffer() const noexcept override {
-		return { title , body };
+		return std::pair{ title , body };
 	}
 
 	 std::string getContent() const noexcept override {
@@ -190,7 +196,7 @@ private:
 
 class TitleNode : public Node, public Storable<std::pair<std::string, std::string>>, public Displayable {
 public:
-	TitleNode(NodeUid uid, std::pair<std::string, std::string>&& pair) : Node(uid, NodeType::Text) {};
+	TitleNode(NodeUid uid, std::pair<std::string, std::string>&& pair) :title(pair.first) , body(pair.second) , Node(uid, NodeType::Text) {};
 
 	const std::pair<std::string, std::string>& getBuffer() const noexcept override {
 		return { title , body };
@@ -362,4 +368,12 @@ public:
 private:
 	std::string m_fileName, m_extension;
 	std::string m_buffer;
+};
+
+class EndNode : public Node {
+public:
+	EndNode(NodeUid uid) : Node(uid, NodeType::End) {};
+	void acceptVisitor(NodeVisitor& visitor) override {
+		visitor.visit(*this);
+	}
 };

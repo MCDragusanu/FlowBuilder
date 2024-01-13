@@ -20,8 +20,8 @@ public:
 
 struct Option {
 	std::string m_name, m_keyName;
-	char m_key;
-	Option(std::string&& name, std::string&& keyName ,char key) :m_name(name), m_keyName(keyName), m_key(key) {};
+	std::string m_key;
+	Option(std::string&& name, std::string&& keyName ,std::string&& key) :m_name(name), m_keyName(keyName), m_key(key) {};
 };
 struct InputHandler {
 
@@ -29,7 +29,7 @@ struct InputHandler {
 		
 		std::cout << inputDescription;
 		std::string input;
-		if (!(std::cin >> input)) {
+		if (!(std::getline(std::cin , input))) {
 			return {};
 		} else return std::optional(input);
 	}
@@ -61,13 +61,41 @@ struct InputHandler {
 			std::cout << option.m_name << " -> " << option.m_keyName << "\n";
 		}
 
-		std::optional<char> userInput = readCharacter("");
+		std::optional<std::string> userInput = readString("Your Input : ");
 		if (!userInput.has_value()) {
 			return {};
 		}
 
 		auto iterator = std::find_if(options.begin(), options.end(), [&userInput](const Option& item) {
-			return userInput.value_or(-1) == item.m_key;
+			return userInput.value_or(std::string()) == item.m_key;
+			});
+
+		if (iterator == options.end()) {
+			std::cerr << "Invalid option selected.\n";
+			return {};
+		}
+		else {
+			return *iterator;
+		}
+	};
+	virtual std::optional<Option> pickOption(const char* decisionMessage, const std::vector<Option>& options) {
+		if (options.empty()) {
+			std::cerr << "No options available.\n";
+			return {};
+		}
+
+		std::cout << decisionMessage << "\n";
+		for (const auto& option : options) {
+			std::cout << option.m_name << " -> " << option.m_keyName << "\n";
+		}
+
+		std::optional<std::string> userInput = readString("");
+		if (!userInput.has_value()) {
+			return {};
+		}
+
+		auto iterator = std::find_if(options.begin(), options.end(), [&userInput](const Option& item) {
+			return userInput.value_or(std::string()) == item.m_key;
 			});
 
 		if (iterator == options.end()) {
